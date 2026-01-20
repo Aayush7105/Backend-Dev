@@ -12,8 +12,8 @@ function logSystemInfo() {
   const cpuModel = os.cpus()[0].model;
   const cpuCores = os.cpus().length;
 
-  const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
-  const freeMemory = (os.freemem() / 1024 / 1024).toFixed(2);
+  const totalMemory = (os.totalmem() / 1024 ** 3).toFixed(2);
+  const freeMemory = (os.freemem() / 1024 ** 3).toFixed(2);
 
   const platform = os.platform();
   const arch = os.arch();
@@ -22,7 +22,7 @@ function logSystemInfo() {
 [${timestamp}]
 Platform: ${platform} (${arch})
 CPU: ${cpuModel} (${cpuCores} cores)
-Memory: ${freeMemory} MB free / ${totalMemory} MB total
+Memory: ${freeMemory} GB free / ${totalMemory} GB total
 ----------------------------------------
 `;
 
