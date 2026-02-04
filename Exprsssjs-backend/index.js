@@ -1,40 +1,71 @@
 const express = require("express");
-const app = express();
+const fs = require("fs");
 
-const students = [
-  { id: 1, name: "Aayush", branch: "CSE" },
-  { id: 2, name: "Aman", branch: "ECE" },
-  { id: 3, name: "jatin", branch: "ME" },
-];
+const students = JSON.parse(fs.readFileSync("./db.json", "utf-8"));
+
+const app = express();
+app.use(express.json());
+const PORT = 8001;
+
+// app.get("/",(req,res)=>{
+//     res.send("WELCOME to HOME PAGE")
+// })
+
+// app.get("/users",(req,res)=>{
+//     res.send("<h1>This is user page</h1>")
+// })
+
+// app.get("/users/:id",(req,res)=>{
+
+//     const userid = req.params.id;
+//     res.send(`You are requesting for use: ${userid} `)
+// })
+
+// app.listen(PORT,()=>{
+//     console.log(`Server is running : ${PORT}`);
+// })
 
 app.get("/", (req, res) => {
-  res.send("Welcome");
+  res.send("WELCOME to HOME PAGE");
 });
-
 app.get("/students", (req, res) => {
+  res.json(students);
+});
+app.post("/students", (req, res) => {
+  const newStudent = req.body;
+  const studentid = newStudent.id;
+  const exist = students.find((s) => s.id === studentid);
+  if (exist) {
+    return res
+      .status(400)
+      .json({ message: "Student with this ID already exists" });
+  }
+  if (
+    newStudent.id == undefined ||
+    newStudent.name == undefined ||
+    newStudent.age == undefined
+  ) {
+    return res.status(400).json({ message: "Invalid student data" });
+  }
+  students.push(newStudent);
+  fs.writeFileSync("./db.json", JSON.stringify(students));
+  res.status(201).json(newStudent);
+});
+app.get("/students/:id", (req, res) => {
+  const studentId = parseInt(req.params.id);
+  const student = students.find((s) => s.id === studentId);
+  if (student) {
+    res.json(student);
+  } else {
+    res.status(404).send({ message: "Student not found" });
+  }
+});
+
+app.get("/search", (req, res) => {
   const branch = req.query.branch;
-
-  const result = students.filter(
-    (s) => s.branch.toLowerCase() === branch.toLowerCase(),
-  );
-  if (result.length === 0) {
-    return res.status(404).send("This branch is empty");
-  }
-  res.json(result);
+  const foundStudents = students.filter((student) => student.branch === branch);
+  res.json(foundStudents);
 });
-
-app.get("/student/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const student = students.find((s) => s.id === id);
-  if (!student) {
-    return res.status(404).send("Student not found");
-  }
-  res.json(student);
-});
-
-// app.get("/students", (req, res) => {
-//   res.json(students);
-// });
-app.listen(8000, () => {
-  console.log("Server running on http://localhost:8000");
+app.listen(PORT, () => {
+  console.log(`Server is running : http://localhost:${PORT}`);
 });
